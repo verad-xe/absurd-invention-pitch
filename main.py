@@ -15,7 +15,24 @@ ENTRY = (
 )
 
 
+def check_gate(entry: str) -> None:
+    """Self-check the bounty gate: 1-220 UTF-8 chars, exactly one sentence.
+
+    The bounty scores a single sentence, so a gate breach (too long, or a
+    second sentence sneaking in) would fail the entry outright. Checking
+    before writing means a bad ENTRY can never be submitted silently.
+    """
+    if not 1 <= len(entry) <= 220:
+        raise ValueError(f"entry must be 1-220 chars, got {len(entry)}")
+    # Exactly one sentence: a single terminal period, no other terminators.
+    if entry.count(".") != 1 or not entry.rstrip().endswith("."):
+        raise ValueError("entry must be exactly one sentence")
+    if any(c in entry for c in "!?"):
+        raise ValueError("entry must not contain extra sentence terminators")
+
+
 def main() -> None:
+    check_gate(ENTRY)
     out_dir = os.environ["MAKEFUN_OUTPUT_DIR"]
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "entry.txt"), "w", encoding="utf-8") as f:
